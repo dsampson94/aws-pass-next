@@ -1,8 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import cloudPractitionerQuestions from '@/questions/cloud-practitioner';
-import { FaCheckCircle, FaTimesCircle, FaRedo, FaInfoCircle } from 'react-icons/fa';
+import {
+    FaCheckCircle,
+    FaTimesCircle,
+    FaRedo,
+    FaCheck,
+    FaTimes,
+    FaCog,
+    FaBookmark,
+} from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type UserAnswer = {
@@ -12,18 +20,104 @@ type UserAnswer = {
 };
 
 export default function CloudPractitionerQuiz() {
+    const LOCAL_STORAGE_KEY = 'cloudPractitionerQuizAnswers';
+
+    // State Variables
+    const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
     const [currentQuestion, setCurrentQuestion] = useState<number>(0);
-    const [selectedOption, setSelectedOption] = useState<string>('');
     const [score, setScore] = useState<number>(0);
     const [showScore, setShowScore] = useState<boolean>(false);
     const [showExplanation, setShowExplanation] = useState<boolean>(false);
+    const [selectedOption, setSelectedOption] = useState<string>('');
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-    const [isPopupVisible, setIsPopupVisible] = useState(false); // Popup visibility state
+
+    // Dropdown State
+    const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+
+    // Refs for Dropdown Handling
+    const settingsRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Subdomain Progress State Variables
+    const [subDomainProgress, setSubDomainProgress] = useState<number>(0);
+    const [currentSubDomain, setCurrentSubDomain] = useState<string>(
+        cloudPractitionerQuestions[0].subDomain
+    );
+    const [currentCriticalTopic, setCurrentCriticalTopic] = useState<string>(
+        cloudPractitionerQuestions[0].criticalTopic
+    );
 
     const totalQuestions = cloudPractitionerQuestions.length;
-    const currentSubDomain = cloudPractitionerQuestions[currentQuestion].subDomain;
 
+    // Helper Function to Find First Unanswered Question
+    const findFirstUnanswered = (answers: UserAnswer[]): number => {
+        for (let i = 0; i < totalQuestions; i++) {
+            const question = cloudPractitionerQuestions[i].question;
+            const answered = answers.find((ans) => ans.question === question);
+            if (!answered) {
+                return i;
+            }
+        }
+        // If all questions are answered, return the last index
+        return totalQuestions - 1;
+    };
+
+    // Calculate percentage complete based on number of answered questions
+    const calculatePercentComplete = (): number => {
+        const answeredQuestions = userAnswers.length;
+        return Math.round((answeredQuestions / totalQuestions) * 100);
+    };
+
+    // Load User Answers from Local Storage on Mount
+    useEffect(() => {
+        const storedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (storedAnswers) {
+            try {
+                const parsedAnswers: UserAnswer[] = JSON.parse(storedAnswers);
+                setUserAnswers(parsedAnswers);
+
+                // Calculate Score
+                const storedScore = parsedAnswers.filter((answer) => answer.isCorrect).length;
+                setScore(storedScore);
+
+                // Set Current Question to First Unanswered
+                const firstUnanswered = findFirstUnanswered(parsedAnswers);
+                setCurrentQuestion(firstUnanswered);
+            } catch (error) {
+                console.error('Failed to parse stored answers:', error);
+            }
+        }
+    }, []);
+
+    // Synchronize State When currentQuestion or userAnswers Change
+    useEffect(() => {
+        const currentQ = cloudPractitionerQuestions[currentQuestion];
+        setCurrentSubDomain(currentQ.subDomain);
+        setCurrentCriticalTopic(currentQ.criticalTopic);
+
+        const answer = userAnswers.find((ans) => ans.question === currentQ.question);
+        if (answer) {
+            setSelectedOption(answer.selectedOption);
+            setIsCorrect(answer.isCorrect);
+            setShowExplanation(true);
+        } else {
+            setSelectedOption('');
+            setIsCorrect(null);
+            setShowExplanation(false);
+        }
+
+        // Update Subdomain Progress
+        const questionsInSubDomain = cloudPractitionerQuestions.filter(
+            (q) => q.subDomain === currentQ.subDomain
+        ).length;
+        const answeredInSubDomain = userAnswers.filter(
+            (ans) =>
+                cloudPractitionerQuestions.find(q => q.question === ans.question)?.subDomain === currentQ.subDomain
+        ).length;
+        setSubDomainProgress(Math.round((answeredInSubDomain / questionsInSubDomain) * 100));
+    }, [currentQuestion, userAnswers]);
+
+    // Handle Option Selection
     const handleOptionSelect = (option: string) => {
         if (selectedOption) return; // Prevent multiple selections
         setSelectedOption(option);
@@ -34,38 +128,64 @@ export default function CloudPractitionerQuiz() {
             setScore((prev) => prev + 1);
         }
 
-        // Save user answer
-        setUserAnswers((prev) => [
-            ...prev,
-            {
-                question: cloudPractitionerQuestions[currentQuestion].question,
-                selectedOption: option || 'No Answer',
-                isCorrect: correct,
-            },
-        ]);
+        // Save or Update User Answer
+        setUserAnswers((prev) => {
+            const updatedAnswers = [...prev];
+            const existingIndex = updatedAnswers.findIndex(
+                (answer) => answer.question === cloudPractitionerQuestions[currentQuestion].question
+            );
+            if (existingIndex !== -1) {
+                // If the question was previously answered, update it
+                // Adjust score accordingly
+                if (updatedAnswers[existingIndex].isCorrect && !correct) {
+                    setScore((prev) => prev - 1);
+                } else if (!updatedAnswers[existingIndex].isCorrect && correct) {
+                    setScore((prev) => prev + 1);
+                }
+                updatedAnswers[existingIndex] = {
+                    question: cloudPractitionerQuestions[currentQuestion].question,
+                    selectedOption: option || 'No Answer',
+                    isCorrect: correct,
+                };
+            } else {
+                // If it's a new answer, add it to the array
+                updatedAnswers.push({
+                    question: cloudPractitionerQuestions[currentQuestion].question,
+                    selectedOption: option || 'No Answer',
+                    isCorrect: correct,
+                });
+            }
+
+            // Persist Updated Answers to Local Storage
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedAnswers));
+
+            return updatedAnswers;
+        });
     };
 
+    // Handle Navigation to Next Sequential Question
     const handleNextQuestion = () => {
-        setSelectedOption('');
-        setIsCorrect(null);
-        setShowExplanation(false);
-
-        const nextQuestion = currentQuestion + 1;
-        if (nextQuestion < totalQuestions) {
-            setCurrentQuestion(nextQuestion);
+        if (currentQuestion + 1 < totalQuestions) {
+            setCurrentQuestion(currentQuestion + 1);
         } else {
+            // If all questions are answered, show the score
             setShowScore(true);
         }
     };
 
+    // Handle Navigation to Previous Question
     const handlePrevQuestion = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
-            setSelectedOption('');
-            setShowExplanation(false);
         }
     };
 
+    // Handle Progress Bar Clicks
+    const handleProgressBarClick = (index: number) => {
+        setCurrentQuestion(index);
+    };
+
+    // Handle Quiz Restart
     const handleRestartQuiz = () => {
         setCurrentQuestion(0);
         setSelectedOption('');
@@ -74,81 +194,217 @@ export default function CloudPractitionerQuiz() {
         setShowExplanation(false);
         setIsCorrect(null);
         setUserAnswers([]);
+
+        // Clear Stored Answers from Local Storage
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+
+        // Close Dropdown if Open
+        setIsDropdownOpen(false);
     };
 
+    // Handle Go to First Unanswered Question
+    const handleGoToFirstUnanswered = () => {
+        const firstUnanswered = findFirstUnanswered(userAnswers);
+        if (userAnswers.length === totalQuestions) {
+            // All questions are answered
+            alert('All questions have been answered!');
+        } else {
+            setCurrentQuestion(firstUnanswered);
+        }
+
+        // Close Dropdown if Open
+        setIsDropdownOpen(false);
+    };
+
+    // Toggle Dropdown Visibility
+    const toggleDropdown = () => {
+        setIsDropdownOpen((prev) => !prev);
+    };
+
+    // Close Dropdown When Clicking Outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node) &&
+                settingsRef.current &&
+                !settingsRef.current.contains(event.target as Node)
+            ) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     return (
-        <div className="flex flex-col py-8 items-center justify-center transition-colors duration-500">
-            {/* Back and Next Buttons at the Top */}
-            <div className="flex justify-between mb-4 w-full max-w-2xl">
+        <div className="flex flex-col py-2 items-center justify-center transition-colors duration-500">
+            {/* Navigation Buttons: Back, Settings (Dropdown), Next */}
+            <div className="flex items-center mb-4 w-full max-w-2xl space-x-2">
+                {/* Back Button */}
                 <button
-                    className="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 py-2 px-4 rounded-lg"
+                    className={`flex items-center justify-center p-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg transition-all duration-300
+            ${currentQuestion === 0
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'hover:bg-gray-400 dark:hover:bg-gray-500 cursor-pointer'
+                    }`}
                     onClick={handlePrevQuestion}
                     disabled={currentQuestion === 0}
+                    aria-label="Go to Previous Question"
                 >
                     Back
                 </button>
+
+                {/* Spacer */}
+                <div className="flex-1"></div>
+
+                {/* Settings Dropdown */}
+                <div className="relative" ref={settingsRef}>
+                    <button
+                        className="flex items-center justify-center p-2 bg-blue-500 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition duration-300 focus:outline-none"
+                        onClick={toggleDropdown}
+                        aria-label="Settings"
+                    >
+                        <FaCog className="h-5 w-5" />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    <AnimatePresence>
+                        {isDropdownOpen && (
+                            <motion.div
+                                ref={dropdownRef}
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute -left-24 mt-2 w-56 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10"
+                            >
+                                <ul className="py-1">
+                                    {/* Go to First Unanswered Question Option */}
+                                    <li>
+                                        <button
+                                            onClick={handleGoToFirstUnanswered}
+                                            className="w-full flex whitespace-nowrap items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                            aria-label="Go to First Unanswered Question"
+                                        >
+                                            <FaBookmark className="mr-3 h-4 w-4" />
+                                            First Unanswered Question
+                                        </button>
+                                    </li>
+
+                                    {/* Restart Quiz Option */}
+                                    <li>
+                                        <button
+                                            onClick={handleRestartQuiz}
+                                            className="w-full flex items-center whitespace-nowrap px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                            aria-label="Restart Quiz"
+                                        >
+                                            <FaRedo className="mr-2.5 -ml-0.5 h-3 w-3" />
+                                            Restart Quiz
+                                        </button>
+                                    </li>
+                                </ul>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Next Question Button */}
                 <button
-                    className="bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                    className={`flex items-center justify-center p-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg transition-all duration-300
+            ${selectedOption
+                        ? 'hover:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer'
+                        : 'cursor-not-allowed opacity-50'
+                    }`}
                     onClick={handleNextQuestion}
                     disabled={!selectedOption}
+                    aria-label="Go to Next Question"
                 >
-                    {currentQuestion < totalQuestions - 1 ? 'Next Question' : 'Finish Quiz'}
+                    {currentQuestion + 1 === totalQuestions ? 'Finish Quiz' : 'Next Question'}
                 </button>
             </div>
 
-            {/* Progress Bar */}
+            {/* Overall Progress Bar with Clickable Segments */}
             <div className="w-full max-w-2xl mb-4">
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Question {currentQuestion + 1} of {totalQuestions}
                     </span>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {Math.round(((currentQuestion + 1) / totalQuestions) * 100)}% Complete
+                        {calculatePercentComplete()}% Complete
                     </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+
+                {/* Container for Segmented Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700 flex relative">
+                    {/* Filled Portion */}
                     <div
-                        className="bg-blue-500 h-2.5 rounded-full"
-                        style={{ width: `${((currentQuestion + 1) / totalQuestions) * 100}%` }}
+                        className="bg-green-500 h-4 rounded-full transition-width duration-300"
+                        style={{ width: `${calculatePercentComplete()}%` }}
+                    ></div>
+
+                    {/* Clickable Segments with Icons */}
+                    <div className="absolute inset-0 flex justify-between">
+                        {cloudPractitionerQuestions.map((_, index) => {
+                            const isCurrent = index === currentQuestion;
+                            const isAnswered = userAnswers.find(
+                                (ans) => ans.question === cloudPractitionerQuestions[index].question
+                            );
+                            const isCorrect = isAnswered?.isCorrect;
+
+                            return (
+                                <button
+                                    key={index}
+                                    onClick={() => handleProgressBarClick(index)}
+                                    className={`relative w-6 h-6 rounded-full focus:outline-none transition 
+                    ${
+                                        isCurrent
+                                            ? 'bg-blue-600 ring-2 ring-blue-300'
+                                            : isAnswered
+                                                ? isCorrect
+                                                    ? 'bg-green-500'
+                                                    : 'bg-red-500'
+                                                : 'bg-gray-400 dark:bg-gray-500'
+                                    }
+                    hover:bg-blue-700`}
+                                    aria-label={`Go to question ${index + 1}`}
+                                >
+                                    {/* Display Icons for Answered Questions */}
+                                    {isAnswered && !isCurrent && (
+                                        <span className="absolute inset-0 flex items-center justify-center text-xs text-white">
+                                            {isCorrect ? <FaCheck /> : <FaTimes />}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            {/* Subdomain Progress Bar */}
+            <div className="w-full max-w-2xl mb-6">
+                <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs w-2/5 font-medium text-gray-700 dark:text-gray-300">
+                        {currentSubDomain}
+                    </span>
+                    <span className="text-xs w-1/2 text-right font-medium text-gray-700 dark:text-gray-300">
+                        {currentCriticalTopic}
+                    </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
+                    <div
+                        className="bg-green-500 h-3 rounded-full transition-width duration-300"
+                        style={{ width: `${subDomainProgress}%` }}
                     ></div>
                 </div>
             </div>
 
+            {/* Quiz Content */}
             <div className="max-w-2xl w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 relative">
-                {/* Progress Information Popup */}
-                <div className="absolute top-4 right-4">
-                    <FaInfoCircle
-                        size={24}
-                        className="text-gray-600 dark:text-gray-300 cursor-pointer"
-                        onMouseEnter={() => setIsPopupVisible(true)}
-                        onMouseLeave={() => setIsPopupVisible(false)}
-                    />
-                    <AnimatePresence>
-                        {isPopupVisible && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                                className="absolute bg-white dark:bg-gray-700 shadow-lg rounded-lg p-4 w-64 right-10 text-sm"
-                            >
-                                <p>
-                                    <strong>Subdomain:</strong> {currentSubDomain}
-                                </p>
-                                <p>
-                                    <strong>Critical Topic:</strong>{' '}
-                                    {cloudPractitionerQuestions[currentQuestion].criticalTopic}
-                                </p>
-                                <p>
-                                    <strong>
-                                        Question {currentQuestion + 1} of {totalQuestions}
-                                    </strong>
-                                </p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
                 {showScore ? (
                     <AnimatePresence>
                         <motion.div
@@ -190,7 +446,7 @@ export default function CloudPractitionerQuiz() {
                         <motion.div key={currentQuestion} animate={{ opacity: 1, x: 0 }}>
                             {/* Question Card */}
                             <div className="mb-4">
-                                <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-2">
+                                <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-200 mb-2">
                                     {cloudPractitionerQuestions[currentQuestion].question}
                                 </h3>
                             </div>
@@ -198,58 +454,54 @@ export default function CloudPractitionerQuiz() {
                             {/* Options */}
                             <ul className="space-y-3">
                                 {cloudPractitionerQuestions[currentQuestion].options.map(
-                                    (option, index) => (
-                                        <motion.li
-                                            key={index}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.1 }}
-                                        >
-                                            <button
-                                                onClick={() => {
-                                                    if (!selectedOption) {
-                                                        handleOptionSelect(option);
-                                                    } else if (
-                                                        option ===
-                                                        cloudPractitionerQuestions[
-                                                            currentQuestion
-                                                            ].answer
-                                                    ) {
-                                                        // User clicks on the correct answer again
-                                                        handleNextQuestion();
-                                                    }
-                                                }}
-                                                className={`w-full flex items-center justify-between px-4 py-2 border rounded-lg text-left transition-colors duration-300 focus:outline-none
-                                                    ${
-                                                    selectedOption
-                                                        ? option ===
-                                                        cloudPractitionerQuestions[
-                                                            currentQuestion
-                                                            ].answer
-                                                            ? 'bg-green-100 dark:bg-green-700 border-green-500 cursor-pointer'
-                                                            : selectedOption === option
-                                                                ? 'bg-red-100 dark:bg-red-700 border-red-500'
-                                                                : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                                                        : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-800 cursor-pointer'
-                                                }
-                                                `}
-                                                aria-pressed={selectedOption === option}
+                                    (option, index) => {
+                                        const isOptionCorrect =
+                                            option === cloudPractitionerQuestions[currentQuestion].answer;
+                                        const isOptionSelected = option === selectedOption;
+
+                                        return (
+                                            <motion.li
+                                                key={index}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.1 }}
                                             >
-                                                <span className="text-gray-800 dark:text-gray-200">
-                                                    {option}
-                                                </span>
-                                                {selectedOption && (
-                                                    option ===
-                                                    cloudPractitionerQuestions[currentQuestion]
-                                                        .answer ? (
-                                                        <FaCheckCircle className="h-6 w-6 text-green-500" />
-                                                    ) : selectedOption === option ? (
-                                                        <FaTimesCircle className="h-6 w-6 text-red-500" />
-                                                    ) : null
-                                                )}
-                                            </button>
-                                        </motion.li>
-                                    )
+                                                <button
+                                                    onClick={() => {
+                                                        if (!selectedOption) {
+                                                            handleOptionSelect(option);
+                                                        } else if (isOptionCorrect) {
+                                                            handleNextQuestion();
+                                                        }
+                                                    }}
+                                                    disabled={!!selectedOption && !isOptionCorrect}
+                                                    className={`w-full flex items-center justify-between px-4 py-2 border rounded-lg text-left transition-colors duration-300 focus:outline-none
+                            ${
+                                                        selectedOption
+                                                            ? isOptionCorrect
+                                                                ? 'bg-green-100 dark:bg-green-700 border-green-500 cursor-pointer'
+                                                                : isOptionSelected
+                                                                    ? 'bg-red-100 dark:bg-red-700 border-red-500 cursor-default'
+                                                                    : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 cursor-default'
+                                                            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-800 cursor-pointer'
+                                                    }
+                          `}
+                                                    aria-pressed={isOptionSelected}
+                                                >
+                          <span className="text-gray-800 dark:text-gray-200">
+                            {option}
+                          </span>
+                                                    {selectedOption && (
+                                                        isOptionCorrect ? (
+                                                            <FaCheckCircle className="h-6 w-6 text-green-500" />
+                                                        ) : isOptionSelected ? (
+                                                            <FaTimesCircle className="h-6 w-6 text-red-500" />
+                                                        ) : null
+                                                    )}
+                                                </button>
+                                            </motion.li>
+                                        );
+                                    }
                                 )}
                             </ul>
 
@@ -268,10 +520,7 @@ export default function CloudPractitionerQuiz() {
                                             Explanation:
                                         </h4>
                                         <p className="mt-2 text-gray-700 dark:text-gray-300">
-                                            {
-                                                cloudPractitionerQuestions[currentQuestion]
-                                                    .explanation
-                                            }
+                                            {cloudPractitionerQuestions[currentQuestion].explanation}
                                         </p>
                                     </motion.div>
                                 )}
