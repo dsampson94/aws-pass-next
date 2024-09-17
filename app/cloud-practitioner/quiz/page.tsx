@@ -29,7 +29,7 @@ export default function CloudPractitionerQuiz() {
     const [showScore, setShowScore] = useState<boolean>(false);
     const [showExplanation, setShowExplanation] = useState<boolean>(false);
     const [selectedOption, setSelectedOption] = useState<string>('');
-    const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+    const [, setIsCorrect] = useState<boolean | null>(null);
 
     // Dropdown State
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);

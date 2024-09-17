@@ -1,6 +1,6 @@
 'use client';
 
-import { FaTwitter, FaGithub, FaLinkedin, FaCoffee, FaSun, FaMoon, FaYoutube } from 'react-icons/fa';
+import { FaMoon, FaSun } from 'react-icons/fa';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -8,7 +8,6 @@ export default function Header() {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
-    // Ensure the component is mounted before accessing theme to avoid hydration mismatch
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -16,10 +15,10 @@ export default function Header() {
     if (!mounted) return null;
 
     return (
-        <header className={`${theme === 'light' ? 'bg-white' : 'bg-gray-900'} text-white shadow-md`}>
+        <header className={ `${ theme === 'light' ? 'bg-white' : 'bg-gray-900' } text-white shadow-md` }>
             <nav className="container px-4 flex justify-between items-center py-4 min-w-full">
                 <a href="/"
-                    className={`text-xl font-bold ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+                   className={ `text-xl font-bold ${ theme === 'light' ? 'text-black' : 'text-white' }` }>
                     AWS Pass
                 </a>
 
