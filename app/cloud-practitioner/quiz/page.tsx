@@ -327,13 +327,31 @@ export default function CloudPractitionerQuiz() {
                 </button>
             </div>
 
+            {/* Subdomain Progress Bar */}
+            <div className="w-full max-w-2xl mb-2">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs w-1/2 font-medium text-gray-700 dark:text-gray-300">
+                        {currentSubDomain}
+                    </span>
+                    <span className="text-xs w-1/2 text-right font-medium text-gray-700 dark:text-gray-300">
+                        {currentCriticalTopic}
+                    </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
+                    <div
+                        className="bg-blue-500 h-3 rounded-full transition-width duration-300"
+                        style={{ width: `${subDomainProgress}%` }}
+                    ></div>
+                </div>
+            </div>
+
             {/* Overall Progress Bar with Clickable Segments */}
             <div className="w-full max-w-2xl mb-4">
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         Question {currentQuestion + 1} of {totalQuestions}
                     </span>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         {calculatePercentComplete()}% Complete
                     </span>
                 </div>
@@ -382,24 +400,6 @@ export default function CloudPractitionerQuiz() {
                             );
                         })}
                     </div>
-                </div>
-            </div>
-
-            {/* Subdomain Progress Bar */}
-            <div className="w-full max-w-2xl mb-6">
-                <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs w-2/5 font-medium text-gray-700 dark:text-gray-300">
-                        {currentSubDomain}
-                    </span>
-                    <span className="text-xs w-1/2 text-right font-medium text-gray-700 dark:text-gray-300">
-                        {currentCriticalTopic}
-                    </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
-                    <div
-                        className="bg-green-500 h-3 rounded-full transition-width duration-300"
-                        style={{ width: `${subDomainProgress}%` }}
-                    ></div>
                 </div>
             </div>
 
