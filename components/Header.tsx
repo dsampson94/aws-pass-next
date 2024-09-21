@@ -31,19 +31,19 @@ export default function Header() {
                         { theme === 'light' ? <FaMoon/> : <FaSun/> }
                     </button>
 
-                    <a
-                        href="https://buymeacoffee.com/awsquiztool"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Buy me a coffee"
-                        className="flex items-center"
-                    >
-                        <img
-                            src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
-                            alt="Buy Me a Coffee"
-                            className="h-8 w-auto rounded-lg hover:opacity-90 transition-opacity duration-300"
-                        />
-                    </a>
+                    {/*<a*/}
+                    {/*    href="https://buymeacoffee.com/awsquiztool"*/}
+                    {/*    target="_blank"*/}
+                    {/*    rel="noopener noreferrer"*/}
+                    {/*    aria-label="Buy me a coffee"*/}
+                    {/*    className="flex items-center"*/}
+                    {/*>*/}
+                    {/*    <img*/}
+                    {/*        src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"*/}
+                    {/*        alt="Buy Me a Coffee"*/}
+                    {/*        className="h-8 w-auto rounded-lg hover:opacity-90 transition-opacity duration-300"*/}
+                    {/*    />*/}
+                    {/*</a>*/}
                 </div>
             </nav>
         </header>

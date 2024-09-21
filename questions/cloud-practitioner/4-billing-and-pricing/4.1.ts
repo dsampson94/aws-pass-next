@@ -55,7 +55,7 @@ export const cloudPractitionerPricingModels = [
             "D. Only available for storage services"
         ],
         answer: "A. Greater flexibility across instance families, sizes, and regions",
-        explanation: "Savings Plans offer significant savings like Reserved Instances but with more flexibility to change instance types, sizes, and regions."
+        explanation: "Savings Plans offer significant savings like Reserved Instances but with more flexibility to change instance types.ts, sizes, and regions."
     },
     {
         id: 5,
@@ -105,12 +105,12 @@ export const cloudPractitionerPricingModels = [
         criticalTopic: "Convertible Reserved Instances",
         question: "What is a key feature of Convertible Reserved Instances?",
         options: [
-            "A. They can be exchanged for different instance types within the same instance family",
+            "A. They can be exchanged for different instance types.ts within the same instance family",
             "B. They offer higher discounts than Standard Reserved Instances",
-            "C. They allow changing instance types, operating systems, and tenancies",
+            "C. They allow changing instance types.ts, operating systems, and tenancies",
             "D. They have no commitment term"
         ],
-        answer: "C. They allow changing instance types, operating systems, and tenancies",
+        answer: "C. They allow changing instance types.ts, operating systems, and tenancies",
         explanation: "Convertible Reserved Instances provide flexibility to change instance attributes while benefiting from a discounted rate."
     },
     {

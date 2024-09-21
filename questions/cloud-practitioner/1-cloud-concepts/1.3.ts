@@ -331,11 +331,11 @@ export const cloudPractitionerCloudArchitecture = [
         options: [
             "A. Over-provisioning resources to handle peak loads",
             "B. Continuously running all resources regardless of demand",
-            "C. Selecting the right resource types and sizes based on workload",
+            "C. Selecting the right resource types.ts and sizes based on workload",
             "D. Ignoring usage patterns when provisioning resources"
         ],
-        answer: "C. Selecting the right resource types and sizes based on workload",
-        explanation: "Choosing appropriate resource types and sizes based on actual workload helps optimize costs and avoid unnecessary expenses."
+        answer: "C. Selecting the right resource types.ts and sizes based on workload",
+        explanation: "Choosing appropriate resource types.ts and sizes based on actual workload helps optimize costs and avoid unnecessary expenses."
     },
     {
         id: 25,

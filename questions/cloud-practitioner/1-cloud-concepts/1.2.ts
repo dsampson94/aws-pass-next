@@ -288,12 +288,12 @@ export const cloudPractitionerCloudEconomics = [
         question: "What does the term 'rightsizing' refer to in the context of AWS cost optimization?",
         options: [
             "A. Upgrading to larger instances for better performance",
-            "B. Matching instance types and sizes to workload performance and capacity requirements at the lowest possible cost",
+            "B. Matching instance types.ts and sizes to workload performance and capacity requirements at the lowest possible cost",
             "C. Consolidating multiple instances into a single large instance",
             "D. Purchasing Reserved Instances for all workloads"
         ],
-        answer: "B. Matching instance types and sizes to workload performance and capacity requirements at the lowest possible cost",
-        explanation: "Rightsizing involves adjusting resource types and sizes to optimally meet workload requirements at minimal cost."
+        answer: "B. Matching instance types.ts and sizes to workload performance and capacity requirements at the lowest possible cost",
+        explanation: "Rightsizing involves adjusting resource types.ts and sizes to optimally meet workload requirements at minimal cost."
     },
     {
         id: 22,
@@ -331,7 +331,7 @@ export const cloudPractitionerCloudEconomics = [
         options: [
             "A. Lower costs compared to On-Demand Instances",
             "B. Compliance with software licensing that requires physical server-bound licenses",
-            "C. Access to the latest instance types",
+            "C. Access to the latest instance types.ts",
             "D. Ability to bid on unused capacity"
         ],
         answer: "B. Compliance with software licensing that requires physical server-bound licenses",
@@ -411,7 +411,7 @@ export const cloudPractitionerCloudEconomics = [
         id: 30,
         subDomain: "1.2 Identify aspects of AWS Cloud economics",
         criticalTopic: "AWS Pricing Models - Reserved Instances vs. Savings Plans",
-        question: "Which of the following offers the most flexibility in terms of changing instance types while still providing cost savings?",
+        question: "Which of the following offers the most flexibility in terms of changing instance types.ts while still providing cost savings?",
         options: [
             "A. Standard Reserved Instances",
             "B. Convertible Reserved Instances",
@@ -419,7 +419,7 @@ export const cloudPractitionerCloudEconomics = [
             "D. Spot Instances"
         ],
         answer: "C. Savings Plans",
-        explanation: "Savings Plans offer greater flexibility than Reserved Instances, allowing you to change instance types, regions, and operating systems while still benefiting from cost savings."
+        explanation: "Savings Plans offer greater flexibility than Reserved Instances, allowing you to change instance types.ts, regions, and operating systems while still benefiting from cost savings."
     },
     {
         id: 31,
@@ -537,7 +537,7 @@ export const cloudPractitionerCloudEconomics = [
         id: 39,
         subDomain: "1.2 Identify aspects of AWS Cloud economics",
         criticalTopic: "AWS Free Tier - Types",
-        question: "What are the types of offerings included in the AWS Free Tier?",
+        question: "What are the types.ts of offerings included in the AWS Free Tier?",
         options: [
             "A. Trial services only",
             "B. Always free, 12 months free, and trials",
