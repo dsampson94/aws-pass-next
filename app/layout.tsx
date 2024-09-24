@@ -4,6 +4,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import AppLayout from '@/components/AppLayout';
 import { ThemeProvider } from 'next-themes';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 const geistSans = localFont({
     src: './fonts/GeistVF.woff',
@@ -30,6 +31,7 @@ export default function RootLayout({
         <html lang="en">
         <head>
             <title>AWS Quiz Tool</title>
+            <GoogleAnalytics/>
         </head>
         <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
