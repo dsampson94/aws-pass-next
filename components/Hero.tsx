@@ -18,7 +18,7 @@ const certifications = [
         description: 'Test your knowledge with comprehensive multiple-choice quizzes and prepare for your AWS SysOps Administrator certification.',
         badge: '/sysopas.png',
         link: '/sysops-administrator-associate',
-        disabled: true,
+        disabled: false,
     },
 ];
 
