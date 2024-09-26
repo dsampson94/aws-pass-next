@@ -32,16 +32,16 @@ export const cloudPractitionerDeployingOperating = [
     {
         id: 3,
         subDomain: "3.1 Define methods of deploying and operating in the AWS Cloud",
-        criticalTopic: "AWS Software Development Kits (SDKs)",
-        question: "What are AWS SDKs used for?",
+        criticalTopic: "AWS Database Migration Service (DMS)",
+        question: "What is the primary use of AWS Database Migration Service (DMS)?",
         options: [
-            "A. Building and managing AWS infrastructure",
-            "B. Integrating AWS services into applications using familiar programming languages",
-            "C. Monitoring AWS resources in real-time",
-            "D. Providing a graphical interface to manage AWS services"
+            "A. Migrate data warehouses to Amazon Redshift",
+            "B. Migrate databases to AWS with minimal downtime",
+            "C. Monitor the health of your databases",
+            "D. Automatically scale your databases"
         ],
-        answer: "B. Integrating AWS services into applications using familiar programming languages",
-        explanation: "AWS SDKs provide APIs in various programming languages, allowing developers to integrate AWS services into their applications."
+        answer: "B. Migrate databases to AWS with minimal downtime",
+        explanation: "AWS DMS is used to migrate databases from on-premises to AWS with minimal downtime and without the need for manual processes."
     },
     {
         id: 4,
@@ -116,16 +116,16 @@ export const cloudPractitionerDeployingOperating = [
     {
         id: 9,
         subDomain: "3.1 Define methods of deploying and operating in the AWS Cloud",
-        criticalTopic: "AWS Lambda",
-        question: "What is AWS Lambda primarily used for?",
+        criticalTopic: "AWS Glue",
+        question: "What is the purpose of AWS Glue in data operations?",
         options: [
-            "A. Running code without provisioning or managing servers",
-            "B. Storing large amounts of data",
-            "C. Deploying containerized applications",
-            "D. Monitoring network traffic"
+            "A. Provisioning virtual servers",
+            "B. Extracting, transforming, and loading data for analytics",
+            "C. Providing object storage for applications",
+            "D. Monitoring AWS infrastructure"
         ],
-        answer: "A. Running code without provisioning or managing servers",
-        explanation: "AWS Lambda lets you run code in response to events and automatically manages the underlying compute resources."
+        answer: "B. Extracting, transforming, and loading data for analytics",
+        explanation: "AWS Glue is a fully managed ETL service that helps you prepare and transform data for analytics."
     },
     {
         id: 10,
@@ -158,16 +158,16 @@ export const cloudPractitionerDeployingOperating = [
     {
         id: 12,
         subDomain: "3.1 Define methods of deploying and operating in the AWS Cloud",
-        criticalTopic: "AWS Serverless Application Model (SAM)",
-        question: "What does the AWS Serverless Application Model (SAM) enable developers to do?",
+        criticalTopic: "Amazon Athena",
+        question: "What is Amazon Athena primarily used for in operations?",
         options: [
-            "A. Build serverless applications using simplified syntax",
-            "B. Deploy containerized applications",
-            "C. Monitor application performance",
-            "D. Manage user access and permissions"
+            "A. Monitoring and managing EC2 instances",
+            "B. Querying data stored in Amazon S3 using SQL",
+            "C. Performing batch processing workloads",
+            "D. Managing user access to resources"
         ],
-        answer: "A. Build serverless applications using simplified syntax",
-        explanation: "AWS SAM is an open-source framework that simplifies building serverless applications on AWS."
+        answer: "B. Querying data stored in Amazon S3 using SQL",
+        explanation: "Amazon Athena is an interactive query service that allows you to use SQL to analyze data directly in Amazon S3."
     },
     {
         id: 13,
