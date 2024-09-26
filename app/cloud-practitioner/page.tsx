@@ -160,7 +160,7 @@ export default function CloudPractitionerOverview() {
                     </ul>
 
                     <p className="text-gray-700 text-center">
-                        If you can pass this, you are ready!
+                        If you can ace this, you are ready!
                     </p>
                 </div>
             </div>
