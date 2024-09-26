@@ -16,16 +16,15 @@ export default function Header() {
     if (!mounted) return null;
 
     return (
-        <header className={ `${ theme === 'light' ? 'bg-white' : 'bg-gray-900' } text-white shadow-md` }>
-            <nav className="container px-4 flex justify-between items-center py-4 min-w-full">
+        <header className={ `${ theme === 'light' ? 'bg-white' : 'bg-[#232e3d]' } border-b-2 border-[#545b63] text-white shadow-lg` }>
+            <nav className="container px-4 flex justify-between items-center py-2 min-w-full">
                 <a href="/"
                    className={ `flex items-center space-x-2 text-xl font-bold ${ theme === 'light' ? 'text-black' : 'text-white' }` }>
                     <Image
-                        src='/awspass.png'
-                        alt='AWS Pass Logo'
+                        src='/aws360logo.png'
+                        alt='AWS 360 Logo'
                         width={ 40 }
                         height={ 40 }
-                        className="mb-0"
                     />
                     <span>AWS 360</span>
                 </a>

@@ -24,7 +24,7 @@ const certifications = [
 
 export default function Hero() {
     return (
-        <section className="py-20">
+        <section className="py-10">
             <div className="container mx-auto text-center px-4">
                 {certifications.map((cert) => (
                     <div key={cert.id} className="mb-10">
@@ -46,7 +46,7 @@ export default function Hero() {
                             }`}
                             aria-disabled={cert.disabled}
                         >
-                            {cert.disabled ? 'Coming Soon' : `Start ${cert.title} Quiz`}
+                            {cert.disabled ? 'Coming Soon' : `Start`}
                         </a>
                         {cert.id !== certifications.length && <hr className="my-12 border-gray-300" />}
                     </div>

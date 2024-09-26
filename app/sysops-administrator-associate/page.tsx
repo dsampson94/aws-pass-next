@@ -80,7 +80,7 @@ export default function SysOpsAdministratorOverview() {
                 </div>
 
                 {/* Overview Content Section */ }
-                <div className="max-w-3xl mx-auto bg-white text-gray-800 p-6 shadow-lg rounded-lg mt-8">
+                <div className="max-w-3xl mx-auto bg-gray-100 text-gray-800 p-6 shadow-lg rounded-lg mt-8">
                     <h2 className="text-xl font-semibold mb-4">Quiz Breakdown</h2>
 
                     {/* Monitoring, Logging, and Remediation */ }
