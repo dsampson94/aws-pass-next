@@ -1,4 +1,4 @@
-// components/Quiz.tsx
+// components/quiz/Quiz.tsx
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -6,7 +6,7 @@ import QuizNavigation from './QuizNavigation';
 import SubdomainProgress from './SubdomainProgress';
 import QuizProgress from './QuizProgress';
 import QuizContent from './QuizContent';
-import { Question, UserAnswer } from '@/components/quiz/types';
+import { Question, UserAnswer } from './types';
 
 type QuizProps = {
     questions: Question[];
@@ -14,7 +14,7 @@ type QuizProps = {
 };
 
 const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
-    const LOCAL_STORAGE_KEY = `${ quizKey }QuizAnswers`;
+    const LOCAL_STORAGE_KEY = `${quizKey}QuizAnswers`;
 
     const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
     const [currentQuestion, setCurrentQuestion] = useState<number>(0);
@@ -35,6 +35,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
 
     const totalQuestions = questions.length;
 
+    // Helper Function to Find First Unanswered Question
     const findFirstUnanswered = (answers: UserAnswer[]): number => {
         for (let i = 0; i < totalQuestions; i++) {
             const question = questions[i].question;
@@ -43,22 +44,29 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
                 return i;
             }
         }
+        // If all questions are answered, return the last index
         return totalQuestions - 1;
     };
 
+    // Calculate percentage complete based on number of answered questions
     const calculatePercentComplete = (): number => {
         const answeredQuestions = userAnswers.length;
         return Math.round((answeredQuestions / totalQuestions) * 100);
     };
 
+    // Load User Answers from Local Storage on Mount
     useEffect(() => {
         const storedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (storedAnswers) {
             try {
                 const parsedAnswers: UserAnswer[] = JSON.parse(storedAnswers);
                 setUserAnswers(parsedAnswers);
+
+                // Calculate Score
                 const storedScore = parsedAnswers.filter((answer) => answer.isCorrect).length;
                 setScore(storedScore);
+
+                // Set Current Question to First Unanswered
                 const firstUnanswered = findFirstUnanswered(parsedAnswers);
                 setCurrentQuestion(firstUnanswered);
             } catch (error) {
@@ -67,6 +75,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
         }
     }, [LOCAL_STORAGE_KEY]);
 
+    // Synchronize State When currentQuestion or userAnswers Change
     useEffect(() => {
         const currentQ = questions[currentQuestion];
         setCurrentSubDomain(currentQ.subDomain);
@@ -83,15 +92,17 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
             setShowExplanation(false);
         }
 
+        // Update Subdomain Progress
         const questionsInSubDomain = questions.filter((q) => q.subDomain === currentQ.subDomain).length;
         const answeredInSubDomain = userAnswers.filter(
-            (ans) => questions.find((q) => q.question === ans.question)?.subDomain === currentQ.subDomain
+            (ans) => questions.find(q => q.question === ans.question)?.subDomain === currentQ.subDomain
         ).length;
         setSubDomainProgress(Math.round((answeredInSubDomain / questionsInSubDomain) * 100));
     }, [currentQuestion, userAnswers, questions]);
 
+    // Handle Option Selection
     const handleOptionSelect = (option: string) => {
-        if (selectedOption) return;
+        if (selectedOption) return; // Prevent multiple selections
         setSelectedOption(option);
         setShowExplanation(true);
         const correct = option === questions[currentQuestion].answer;
@@ -100,12 +111,15 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
             setScore((prev) => prev + 1);
         }
 
+        // Save or Update User Answer
         setUserAnswers((prev) => {
             const updatedAnswers = [...prev];
             const existingIndex = updatedAnswers.findIndex(
                 (answer) => answer.question === questions[currentQuestion].question
             );
             if (existingIndex !== -1) {
+                // If the question was previously answered, update it
+                // Adjust score accordingly
                 if (updatedAnswers[existingIndex].isCorrect && !correct) {
                     setScore((prev) => prev - 1);
                 } else if (!updatedAnswers[existingIndex].isCorrect && correct) {
@@ -113,41 +127,48 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
                 }
                 updatedAnswers[existingIndex] = {
                     question: questions[currentQuestion].question,
-                    selectedOption: option,
+                    selectedOption: option || 'No Answer',
                     isCorrect: correct,
                 };
             } else {
+                // If it's a new answer, add it to the array
                 updatedAnswers.push({
                     question: questions[currentQuestion].question,
-                    selectedOption: option,
+                    selectedOption: option || 'No Answer',
                     isCorrect: correct,
                 });
             }
 
+            // Persist Updated Answers to Local Storage
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedAnswers));
 
             return updatedAnswers;
         });
     };
 
+    // Handle Navigation to Next Sequential Question
     const handleNextQuestion = () => {
         if (currentQuestion + 1 < totalQuestions) {
             setCurrentQuestion(currentQuestion + 1);
         } else {
+            // If all questions are answered, show the score
             setShowScore(true);
         }
     };
 
+    // Handle Navigation to Previous Question
     const handlePrevQuestion = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
         }
     };
 
+    // Handle Progress Bar Clicks
     const handleProgressBarClick = (index: number) => {
         setCurrentQuestion(index);
     };
 
+    // Handle Quiz Restart
     const handleRestartQuiz = () => {
         setCurrentQuestion(0);
         setSelectedOption('');
@@ -157,26 +178,33 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
         setIsCorrect(null);
         setUserAnswers([]);
 
+        // Clear Stored Answers from Local Storage
         localStorage.removeItem(LOCAL_STORAGE_KEY);
 
+        // Close Dropdown if Open
         setIsDropdownOpen(false);
     };
 
+    // Handle Go to First Unanswered Question
     const handleGoToFirstUnanswered = () => {
         const firstUnanswered = findFirstUnanswered(userAnswers);
         if (userAnswers.length === totalQuestions) {
+            // All questions are answered
             alert('All questions have been answered!');
         } else {
             setCurrentQuestion(firstUnanswered);
         }
 
+        // Close Dropdown if Open
         setIsDropdownOpen(false);
     };
 
+    // Toggle Dropdown Visibility
     const toggleDropdown = () => {
         setIsDropdownOpen((prev) => !prev);
     };
 
+    // Close Dropdown When Clicking Outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -197,45 +225,50 @@ const Quiz: React.FC<QuizProps> = ({ questions, quizKey }) => {
 
     return (
         <div className="flex flex-col py-2 items-center justify-center transition-colors duration-500">
+            {/* Navigation Buttons: Back, Settings (Dropdown), Next */}
             <QuizNavigation
-                currentQuestion={ currentQuestion }
-                handlePrevQuestion={ handlePrevQuestion }
-                handleNextQuestion={ handleNextQuestion }
-                selectedOption={ selectedOption }
-                totalQuestions={ totalQuestions }
-                handleRestartQuiz={ handleRestartQuiz }
-                handleGoToFirstUnanswered={ handleGoToFirstUnanswered }
-                toggleDropdown={ toggleDropdown }
-                isDropdownOpen={ isDropdownOpen }
-                settingsRef={ settingsRef }
-                dropdownRef={ dropdownRef }
+                currentQuestion={currentQuestion}
+                handlePrevQuestion={handlePrevQuestion}
+                handleNextQuestion={handleNextQuestion}
+                selectedOption={selectedOption}
+                totalQuestions={totalQuestions}
+                handleRestartQuiz={handleRestartQuiz}
+                handleGoToFirstUnanswered={handleGoToFirstUnanswered}
+                toggleDropdown={toggleDropdown}
+                isDropdownOpen={isDropdownOpen}
+                settingsRef={settingsRef}
+                dropdownRef={dropdownRef}
             />
 
+            {/* Subdomain Progress Bar */}
             <SubdomainProgress
-                currentSubDomain={ currentSubDomain }
-                currentCriticalTopic={ currentCriticalTopic }
-                subDomainProgress={ subDomainProgress }
+                currentSubDomain={currentSubDomain}
+                currentCriticalTopic={currentCriticalTopic}
+                subDomainProgress={subDomainProgress}
             />
 
+            {/* Overall Progress Bar with Clickable Segments */}
             <QuizProgress
-                userAnswers={ userAnswers }
-                currentQuestion={ currentQuestion }
-                questions={ questions }
-                handleProgressBarClick={ handleProgressBarClick }
-                totalQuestions={ totalQuestions }
-                calculatePercentComplete={ calculatePercentComplete }
+                userAnswers={userAnswers}
+                currentQuestion={currentQuestion}
+                questions={questions}
+                handleProgressBarClick={handleProgressBarClick}
+                totalQuestions={totalQuestions}
+                calculatePercentComplete={calculatePercentComplete}
             />
 
+            {/* Quiz Content */}
             <QuizContent
-                showScore={ showScore }
-                score={ score }
-                totalQuestions={ totalQuestions }
-                questions={ questions }
-                currentQuestion={ currentQuestion }
-                handleOptionSelect={ handleOptionSelect }
-                selectedOption={ selectedOption }
-                showExplanation={ showExplanation }
-                handleRestartQuiz={ handleRestartQuiz }
+                showScore={showScore}
+                score={score}
+                totalQuestions={totalQuestions}
+                questions={questions}
+                currentQuestion={currentQuestion}
+                handleOptionSelect={handleOptionSelect}
+                handleNextQuestion={handleNextQuestion} // <-- Pass the function here
+                selectedOption={selectedOption}
+                showExplanation={showExplanation}
+                handleRestartQuiz={handleRestartQuiz}
             />
         </div>
     );

@@ -27,7 +27,7 @@ export default function Header() {
                         height={ 40 }
                         className="mb-0"
                     />
-                    <span>AWS Pass</span>
+                    <span>AWS 360</span>
                 </a>
 
                 <div className="flex space-x-4 items-center">

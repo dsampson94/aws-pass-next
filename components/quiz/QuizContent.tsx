@@ -1,8 +1,8 @@
-// components/QuizContent.tsx
+// components/quiz/QuizContent.tsx
 
 import { FaCheckCircle, FaTimesCircle, FaRedo } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Question } from '@/components/quiz/types';
+import { Question } from './types';
 
 type QuizContentProps = {
     showScore: boolean;
@@ -11,6 +11,7 @@ type QuizContentProps = {
     questions: Question[];
     currentQuestion: number;
     handleOptionSelect: (option: string) => void;
+    handleNextQuestion: () => void; // <-- Include this
     selectedOption: string;
     showExplanation: boolean;
     handleRestartQuiz: () => void;
@@ -23,6 +24,7 @@ const QuizContent: React.FC<QuizContentProps> = ({
                                                      questions,
                                                      currentQuestion,
                                                      handleOptionSelect,
+                                                     handleNextQuestion, // <-- Receive the function
                                                      selectedOption,
                                                      showExplanation,
                                                      handleRestartQuiz,
@@ -66,12 +68,14 @@ const QuizContent: React.FC<QuizContentProps> = ({
         ) : (
             <AnimatePresence>
                 <motion.div key={currentQuestion} animate={{ opacity: 1, x: 0 }}>
+                    {/* Question Card */}
                     <div className="mb-4">
                         <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-200 mb-2">
                             {questions[currentQuestion].question}
                         </h3>
                     </div>
 
+                    {/* Options */}
                     <ul className="space-y-3">
                         {questions[currentQuestion].options.map((option, index) => {
                             const isOptionCorrect =
@@ -86,16 +90,23 @@ const QuizContent: React.FC<QuizContentProps> = ({
                                     transition={{ delay: index * 0.1 }}
                                 >
                                     <button
-                                        onClick={() => handleOptionSelect(option)}
+                                        onClick={() => {
+                                            if (!selectedOption) {
+                                                handleOptionSelect(option);
+                                            } else if (isOptionCorrect) {
+                                                handleNextQuestion(); // <-- Trigger next question
+                                            }
+                                        }}
                                         disabled={!!selectedOption && !isOptionCorrect}
                                         className={`w-full flex items-center justify-between px-4 py-2 border rounded-lg text-left transition-colors duration-300 focus:outline-none
-                                            ${selectedOption
-                                            ? isOptionCorrect
-                                                ? 'bg-green-100 dark:bg-green-700 border-green-500 cursor-pointer'
-                                                : isOptionSelected
-                                                    ? 'bg-red-100 dark:bg-red-700 border-red-500 cursor-default'
-                                                    : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 cursor-default'
-                                            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-800 cursor-pointer'
+                                            ${
+                                            selectedOption
+                                                ? isOptionCorrect
+                                                    ? 'bg-green-100 dark:bg-green-700 border-green-500 cursor-pointer'
+                                                    : isOptionSelected
+                                                        ? 'bg-red-100 dark:bg-red-700 border-red-500 cursor-default'
+                                                        : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 cursor-default'
+                                                : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-800 cursor-pointer'
                                         }
                                         `}
                                     >
@@ -115,23 +126,26 @@ const QuizContent: React.FC<QuizContentProps> = ({
                         })}
                     </ul>
 
-                    {showExplanation && (
-                        <motion.div
-                            key="explanation"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="mt-4 p-3 bg-blue-50 dark:bg-blue-700 border-l-4 border-blue-500 dark:border-blue-400 rounded overflow-hidden"
-                        >
-                            <h4 className="text-md font-semibold text-blue-700 dark:text-blue-300">
-                                Explanation:
-                            </h4>
-                            <p className="mt-2 text-gray-700 dark:text-gray-300">
-                                {questions[currentQuestion].explanation}
-                            </p>
-                        </motion.div>
-                    )}
+                    {/* Explanation */}
+                    <AnimatePresence>
+                        {showExplanation && (
+                            <motion.div
+                                key="explanation"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="mt-4 p-3 bg-blue-50 dark:bg-blue-700 border-l-4 border-blue-500 dark:border-blue-400 rounded overflow-hidden"
+                            >
+                                <h4 className="text-md font-semibold text-blue-700 dark:text-blue-300">
+                                    Explanation:
+                                </h4>
+                                <p className="mt-2 text-gray-700 dark:text-gray-300">
+                                    {questions[currentQuestion].explanation}
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </motion.div>
             </AnimatePresence>
         )}
